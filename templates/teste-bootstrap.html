@@ -1,0 +1,40 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Aula 040{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+        
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <span class="navbar-brand">Avaliação contínua: Aula 040</span>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+        
+                <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+                <li><a href="{{ url_for('user', name='Pedro Santos') }}">Identificação</a></li>
+                <li><a href="{{ url_for('contexto_requisicao', name='Pedro Santos') }}">Contexto da requisição</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% block page_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- adicionar o super() -->
+{{ super() }}
+{% endblock %}
