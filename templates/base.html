@@ -1,63 +1,43 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8">
-    <title>{% block title %}Aula 040{% endblock %}</title>
+{% extends "bootstrap/base.html" %}
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+{% block title %}Flasky{% endblock %}
 
-        p { font-size: 24px; margin: 16px 0; }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* estilização da barra de navegação */
-        .navbar {
-            background-color: #212529;
-            color: #f8f9fa;
-            padding: 15px 0;
-        }
-
-        .nav-flex {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-        }
-
-        .navbar .brand { font-weight: bold; }
-        .navbar a { color: #adb5bd; text-decoration: none; }
-        .navbar a:hover { color: #fff; }
-
-        .content { padding: 30px 0; }
-        h1 { font-weight: 400; }
-        hr { border: none; border-top: 1px solid #dee2e6; }
-    </style>
-
-    {% block head %}{% endblock %}
-</head>
-<body>
-    <!-- navbar -->
-    <div class="navbar">
-        <div class="container nav-flex">
-            <span class="brand">Avaliação contínua: Aula 040</span>
-            <a href="{{ url_for('hello_world') }}">Home</a>
-            <a href="{{ url_for('user', name='Pedro Santos') }}">Identificação</a>
-            <a href="{{ url_for('contexto_requisicao', name='Pedro Santos') }}">Contexto da requisição</a>
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- Título da Navbar atualizado -->
+            <a class="navbar-brand" href="{{ url_for('index') }}">Flasky</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+            </ul>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- container principal -->
-    <div class="content container">
-        {% block content %}{% endblock %}
+{% block content %}
+<div class="container">
+    <!-- Bloco para exibir mensagens flash -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
     </div>
+    {% endfor %}
 
-    {% block scripts %}{% endblock %}
-</body>
-</html>
+    {% block page_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% endblock %}

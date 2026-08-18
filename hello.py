@@ -1,15 +1,38 @@
-# A very simple Flask Hello World app for you to get started with...
 from datetime import datetime
-from flask import Flask, request, make_response, redirect, abort, render_template
+from flask import Flask, request, make_response, redirect, abort, render_template, session, url_for, flash
+from flask_bootstrap import Bootstrap
 from flask_moment import Moment
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
+# Configuração da chave secreta para proteger o formulário contra ataques CSRF
+app.config['SECRET_KEY'] = 'Chave forte'
+
+bootstrap = Bootstrap(app)
 moment = Moment(app)
 
-# Rota principal
-@app.route('/')
-def hello_world():
-    return render_template('index.html', current_time=datetime.utcnow())
+# Criação da classe do formulário
+class NameForm(FlaskForm):
+    name = StringField('What is your name?', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+# Rota principal (atualizada para lidar com GET e POST)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    form = NameForm()
+    if form.validate_on_submit():
+        old_name = session.get('name')
+        # Verifica se o nome mudou para disparar a mensagem flash
+        if old_name is not None and old_name != form.name.data:
+            flash('Looks like you have changed your name!')
+        
+        # Salva o nome na sessão e redireciona (Padrão PRG)
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    
+    return render_template('index.html', form=form, name=session.get('name'))
 
 # Rota com variável na URL
 @app.route('/user/<name>')
@@ -33,28 +56,24 @@ def contexto_requisicao(name):
         host=request.host
     )
 
-# rota com código de status HTTP diferente
+# Rota com código de status HTTP diferente
 @app.route('/codigostatusdiferente')
 def codigo_status_diferente():
-    # retorna uma mensagem de erro e o código HTTP 400
     return '<h1>Bad request</h1>', 400
 
 # Rota usando objeto de resposta para criar um cookie
 @app.route('/objetoresposta')
 def objeto_resposta():
-    # resposta personalizada para embutir um cookie
     response = make_response('<h1>This document carries a cookie!</h1>')
     response.set_cookie('meu_cookie', 'valor_do_cookie')
     return response
 
-# rota de redirecionamento
+# Rota de redirecionamento
 @app.route('/redirecionamento')
 def redirecionamento():
-    # redireciona para o site do IF
     return redirect('https://ptb.ifsp.edu.br')
 
-# rota para abortar a requisição
+# Rota para abortar a requisição
 @app.route('/abortar')
 def abortar():
-    # força um erro 404
     abort(404)
