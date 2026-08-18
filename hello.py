@@ -7,7 +7,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
 app = Flask(__name__)
-# Configuração da chave secreta para proteger o formulário contra ataques CSRF
+# Configuração da chave secreta
 app.config['SECRET_KEY'] = 'Chave forte'
 
 bootstrap = Bootstrap(app)
@@ -18,7 +18,7 @@ class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-# Rota principal (atualizada para lidar com GET e POST)
+# Rota principal 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
