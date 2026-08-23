@@ -3,7 +3,7 @@ from flask import Flask, request, make_response, redirect, abort, render_templat
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, SelectField, PasswordField
 from wtforms.validators import DataRequired
 
 app = Flask(__name__)
@@ -13,26 +13,55 @@ app.config['SECRET_KEY'] = 'Chave forte'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
-# Criação da classe do formulário
+# Criação da classe do formulário principal
 class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
+    name = StringField('Informe o seu nome', validators=[DataRequired()])
+    sobrenome = StringField('Informe o seu sobrenome:')
+    instituicao = StringField('Informe a sua Insituição de ensino:')
+    disciplina = SelectField('Informe a sua disciplina:', choices=[('DSWA5', 'DSWA5'), ('DWBA4', 'DWBA4'), ('Gestão de projetos', 'Gestão de projetos')])
     submit = SubmitField('Submit')
+
+# Criação da classe do formulário de Login
+class LoginForm(FlaskForm):
+    username = StringField('Usuário ou e-mail')
+    password = PasswordField('Informe a sua senha')
+    submit = SubmitField('Enviar')
 
 # Rota principal 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')
-        # Verifica se o nome mudou para disparar a mensagem flash
-        if old_name is not None and old_name != form.name.data:
-            flash('Looks like you have changed your name!')
-        
-        # Salva o nome na sessão e redireciona (Padrão PRG)
         session['name'] = form.name.data
+        session['sobrenome'] = form.sobrenome.data
+        session['instituicao'] = form.instituicao.data
+        session['disciplina'] = form.disciplina.data
         return redirect(url_for('index'))
     
-    return render_template('index.html', form=form, name=session.get('name'))
+    return render_template('index.html', form=form, 
+                           name=session.get('name'),
+                           sobrenome=session.get('sobrenome'),
+                           instituicao=session.get('instituicao'),
+                           disciplina=session.get('disciplina'),
+                           remote_addr=request.remote_addr,
+                           host=request.host,
+                           current_time=datetime.utcnow())
+
+# Rota do Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        session['username'] = form.username.data
+        return redirect(url_for('login_response'))
+        
+    return render_template('login.html', form=form, current_time=datetime.utcnow())
+
+# Rota de Resposta do Login
+@app.route('/loginResponse')
+def login_response():
+    username = session.get('username')
+    return render_template('loginResponse.html', username=username, current_time=datetime.utcnow())
 
 # Rota com variável na URL
 @app.route('/user/<name>')
