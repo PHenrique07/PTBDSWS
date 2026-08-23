@@ -21,10 +21,10 @@ class NameForm(FlaskForm):
     disciplina = SelectField('Informe a sua disciplina:', choices=[('DSWA5', 'DSWA5'), ('DWBA4', 'DWBA4'), ('Gestão de projetos', 'Gestão de projetos')])
     submit = SubmitField('Submit')
 
-# Criação da classe do formulário de Login
+# criação da classe do formulário de Login
 class LoginForm(FlaskForm):
-    username = StringField('Usuário ou e-mail')
-    password = PasswordField('Informe a sua senha')
+    username = StringField('', validators=[DataRequired()], render_kw={"placeholder": "Usuário ou e-mail"})
+    password = PasswordField('', validators=[DataRequired()], render_kw={"placeholder": "Informe a sua senha"})
     submit = SubmitField('Enviar')
 
 # Rota principal 
