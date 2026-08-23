@@ -32,19 +32,27 @@ class LoginForm(FlaskForm):
 def index():
     form = NameForm()
     if form.validate_on_submit():
+        # salvando os dados do formulário
         session['name'] = form.name.data
         session['sobrenome'] = form.sobrenome.data
         session['instituicao'] = form.instituicao.data
         session['disciplina'] = form.disciplina.data
+        
+        # salvando IP e host na sessão
+        session['remote_addr'] = request.remote_addr
+        session['host'] = request.host
+        
         return redirect(url_for('index'))
     
     return render_template('index.html', form=form, 
                            name=session.get('name'),
                            sobrenome=session.get('sobrenome'),
                            instituicao=session.get('instituicao'),
-                           disciplina=session.get('disciplina'),
-                           remote_addr=request.remote_addr,
-                           host=request.host,
+                           # o '' no final faz a disciplina virar uma string vazia se não existir, tirando o "None"
+                           disciplina=session.get('disciplina', ''), 
+                           # puxar da sessão
+                           remote_addr=session.get('remote_addr'), 
+                           host=session.get('host'), 
                            current_time=datetime.utcnow())
 
 # Rota do Login
