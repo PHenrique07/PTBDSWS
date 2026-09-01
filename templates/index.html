@@ -5,22 +5,12 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Olá, {% if name %}{{ name }} {{ sobrenome }}{% else %}Estranho{% endif %}!</h1>
-    
-    <!-- teste aumento de fonte -->
-    <h2>A sua Insituição de ensino é {{ instituicao }}</h2>
-    <h3>Está cursando a disciplina de {{ disciplina }}</h3>
-    <br>
-    
-    
-    <p>O IP do computador remoto é: {{ remote_addr }}</p>
-    <p>O host da aplicação é: {{ host }}</p>
+    <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+    {% if not known %}
+    <p>Pleased to meet you!</p>
+    {% else %}
+    <p>Happy to see you again!</p>
+    {% endif %}
 </div>
-
 {{ wtf.quick_form(form) }}
-
-<br>
-
-<p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
-<p>That was {{ moment(current_time).fromNow() }}.</p>
 {% endblock %}
