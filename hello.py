@@ -76,5 +76,10 @@ def index():
             session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
+    
+    # Faz a busca de todos os usuários cadastrados no banco
+    users = User.query.all()
+    
+    # Passa a lista de usuários (users) para o template
     return render_template('index.html', form=form, name=session.get('name'),
-                           known=session.get('known', False))
+                           known=session.get('known', False), users=users)
