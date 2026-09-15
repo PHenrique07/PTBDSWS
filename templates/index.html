@@ -38,7 +38,7 @@
 <br>
 <h2>Relação de funções cadastradas</h2>
 <p>Quantidade: {{ roles|length }}</p>
-<table class="table table-striped">
+<table class="table">
     <thead>
         <tr>
             <th>Funções</th>
@@ -51,9 +51,9 @@
             <td>{{ role.name }}</td>
             <td>
                 <ul class="list-unstyled">
-                {% for user in role.users %}
+                    {% for user in role.users %}
                     <li>{{ loop.index }}. {{ user.username }}</li>
-                {% endfor %}
+                    {% endfor %}
                 </ul>
             </td>
         </tr>
