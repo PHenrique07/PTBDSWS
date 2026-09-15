@@ -50,11 +50,11 @@
         <tr>
             <td>{{ role.name }}</td>
             <td>
-                <ol>
+                <ul class="list-unstyled">
                 {% for user in role.users %}
-                    <li>{{ user.username }}</li>
+                    <li>{{ loop.index }}. {{ user.username }}</li>
                 {% endfor %}
-                </ol>
+                </ul>
             </td>
         </tr>
         {% endfor %}
