@@ -44,7 +44,7 @@ class User(db.Model):
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
-    role = SelectField('Role?', coerce=int) #novo campo de select para escolher a role
+    role = SelectField('Role?:', coerce=int) #novo campo de select para escolher a role
     submit = SubmitField('Submit')
 
 
@@ -67,6 +67,15 @@ def internal_server_error(e):
 def index():
     form = NameForm()
     
+    # Verifica se existem roles no banco, se não existir, cria-as.
+    if Role.query.count() == 0:
+        db.session.add_all([
+            Role(name='Administrator'),
+            Role(name='Moderator'),
+            Role(name='User')
+        ])
+        db.session.commit()
+
     # Verifica se existem roles no banco, para popular as choices do select
     form.role.choices = [(r.id, r.name) for r in Role.query.order_by('name').all()]
     
