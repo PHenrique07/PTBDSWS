@@ -17,6 +17,7 @@
 
 <br>
 <h2>Relação de usuários cadastrados</h2>
+<p>Quantidade: {{ users|length }}</p>
 <table class="table table-striped">
     <thead>
         <tr>
@@ -29,6 +30,32 @@
         <tr>
             <td>{{ u.username }}</td>
             <td>{% if u.role %}{{ u.role.name }}{% else %}User{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+<h2>Relação de funções cadastradas</h2>
+<p>Quantidade: {{ roles|length }}</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Funções</th>
+            <th>Usuários</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.name }}</td>
+            <td>
+                <ol>
+                {% for user in role.users %}
+                    <li>{{ user.username }}</li>
+                {% endfor %}
+                </ol>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
