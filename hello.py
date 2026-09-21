@@ -5,7 +5,7 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField
+from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -53,8 +53,8 @@ class User(db.Model):
 
 
 class NameForm(FlaskForm):
+    # Formulário limpo apenas com o campo Nome, para bater com a imagem da tarefa
     name = StringField('What is your name?', validators=[DataRequired()])
-    role = SelectField('Role?:', coerce=int) 
     submit = SubmitField('Submit')
 
 # ==========================================
@@ -102,14 +102,12 @@ def index():
             Role(name='User')
         ])
         db.session.commit()
-
-    # Verifica se existem roles no banco, para popular as choices do select
-    form.role.choices = [(r.id, r.name) for r in Role.query.order_by('name').all()]
     
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.name.data).first()
         if user is None:
-            user = User(username=form.name.data, role_id=form.role.data)
+            # Salva apenas o nome do usuário, sem o campo role_id que foi removido da tela
+            user = User(username=form.name.data)
             db.session.add(user)
             db.session.commit()
             session['known'] = False
@@ -124,9 +122,6 @@ def index():
                 print(f"Erro ao enviar e-mail: {e}")
                 
         else:
-            user.role_id = form.role.data
-            db.session.add(user)
-            db.session.commit()
             session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
