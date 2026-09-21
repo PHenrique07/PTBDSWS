@@ -1,4 +1,6 @@
 import os
+import requests
+from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
@@ -8,6 +10,9 @@ from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+# Carrega as variáveis do arquivo .env criado localmente (pra n dar ban)
+load_dotenv() 
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
@@ -15,6 +20,11 @@ app.config['SECRET_KEY'] = 'hard to guess string'
 app.config['SQLALCHEMY_DATABASE_URI'] =\
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+#config das api
+app.config['API_KEY'] = os.environ.get('API_KEY')
+app.config['API_URL'] = os.environ.get('API_URL')
+app.config['API_FROM'] = os.environ.get('API_FROM')
 
 bootstrap = Bootstrap(app)
 moment = Moment(app)
@@ -44,8 +54,25 @@ class User(db.Model):
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
-    role = SelectField('Role?:', coerce=int) #novo campo de select para escolher a role
+    role = SelectField('Role?:', coerce=int) 
     submit = SubmitField('Submit')
+
+# ==========================================
+# FUNÇÃO PARA ENVIAR O E-MAIL 
+# =========================================
+def send_simple_message(novo_usuario):
+    # O corpo do email exigido pelo enunciado da atividade
+    corpo_email = f"Prontuário: PT3037347\nNome: Pedro Henrique Santos da Silva\nUsuário cadastrado: {novo_usuario}"
+    
+    # Faz a requisição usando as variáveis salvas nas configurações do app
+    return requests.post(
+        app.config['API_URL'],
+        auth=("api", app.config['API_KEY']),
+        data={"from": app.config['API_FROM'],
+              "to": ["flaskaulasweb@zohomail.com", "santos.pedro4@aluno.ifsp.edu.br"],
+              "subject": "Novo Cadastro na Aplicação WEB",
+              "text": corpo_email}
+    )
 
 
 @app.shell_context_processor
@@ -67,7 +94,7 @@ def internal_server_error(e):
 def index():
     form = NameForm()
     
-    # Verifica se existem roles no banco, se não existir, cria-as.
+    # Verifica se existem roles no banco, se não existir, cria.
     if Role.query.count() == 0:
         db.session.add_all([
             Role(name='Administrator'),
@@ -86,6 +113,16 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
+            
+            # ==========================================================
+            # EMAIL
+            # ==========================================================
+            try:
+                send_simple_message(form.name.data)
+                print("E-mail enviado com sucesso!")
+            except Exception as e:
+                print(f"Erro ao enviar e-mail: {e}")
+                
         else:
             user.role_id = form.role.data
             db.session.add(user)
