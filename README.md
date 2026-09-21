@@ -1,3 +1,6 @@
+# WARNING⚠️: Olhe o spam do email
+
+
 # PTBDSWS - Desenvolvimento Web Servidor
 
 Repositório criado para armazenar os códigos, atividades e projetos desenvolvidos para a matéria de **Desenvolvimento de Sistemas Web**.
