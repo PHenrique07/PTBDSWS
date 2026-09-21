@@ -116,8 +116,11 @@ def index():
             # EMAIL
             # ==========================================================
             try:
-                send_simple_message(form.name.data)
-                print("E-mail enviado com sucesso!")
+                response = send_simple_message(form.name.data)
+                if response.status_code == 200:
+                    print("E-mail enviado com sucesso!")
+                else:
+                    print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
             except Exception as e:
                 print(f"Erro ao enviar e-mail: {e}")
                 
