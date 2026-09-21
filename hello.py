@@ -13,7 +13,7 @@ from flask_migrate import Migrate
 # Carrega as variáveis do arquivo .env criado localmente (pra n dar ban)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-load_dotenv(os.path.join(basedir, '.env'))
+load_dotenv(os.path.join(basedir, '.env'), override=True)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hard to guess string'
