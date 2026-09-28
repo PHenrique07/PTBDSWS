@@ -65,16 +65,20 @@ class NameForm(FlaskForm):
 # ==========================================
 # FUNÇÃO PARA ENVIAR O E-MAIL 
 # =========================================
-def send_simple_message(novo_usuario):
+def send_simple_message(novo_usuario, send_to_admin=False):
     # O corpo do email exigido pelo enunciado da atividade
     corpo_email = f"Prontuário: PT3037347\nNome: Pedro Henrique Santos da Silva\nUsuário cadastrado: {novo_usuario}"
+    
+    recipients = ["santos.pedro4@aluno.ifsp.edu.br"]
+    if send_to_admin:
+        recipients.append("flaskaulasweb@zohomail.com")
     
     # Faz a requisição usando as variáveis salvas nas configurações do app
     return requests.post(
         app.config['API_URL'],
         auth=("api", app.config['API_KEY']),
         data={"from": app.config['API_FROM'],
-              "to": ["flaskaulasweb@zohomail.com"],
+              "to": recipients,
               "subject": "Novo Cadastro na Aplicação WEB",
               "text": corpo_email}
     )
@@ -118,17 +122,16 @@ def index():
             session['known'] = False
             
             # ==========================================================
-            # EMAIL (enviado apenas se a opção estiver marcada)
+            # EMAIL: sempre envia para o seu e-mail e inclui o do professor se marcado
             # ==========================================================
-            if form.email.data:
-                try:
-                    response = send_simple_message(form.name.data)
-                    if response.status_code == 200:
-                        print("E-mail enviado com sucesso!")
-                    else:
-                        print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
-                except Exception as e:
-                    print(f"Erro ao enviar e-mail: {e}")
+            try:
+                response = send_simple_message(form.name.data, send_to_admin=form.email.data)
+                if response.status_code == 200:
+                    print("E-mail enviado com sucesso!")
+                else:
+                    print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
+            except Exception as e:
+                print(f"Erro ao enviar e-mail: {e}")
                 
         else:
             session['known'] = True
