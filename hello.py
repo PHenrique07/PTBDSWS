@@ -5,7 +5,7 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, BooleanField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -52,9 +52,14 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
+with app.app_context():
+    db.create_all()
+
+
+
 class NameForm(FlaskForm):
-    # Formulário limpo apenas com o campo Nome, para bater com a imagem da tarefa
-    name = StringField('What is your name?', validators=[DataRequired()])
+    name = StringField('Qual é o seu nome?', validators=[DataRequired()])
+    email = BooleanField('Deseja enviar e-mail para flaskaulasweb@zohomail.com?')
     submit = SubmitField('Submit')
 
 # ==========================================
@@ -69,7 +74,7 @@ def send_simple_message(novo_usuario):
         app.config['API_URL'],
         auth=("api", app.config['API_KEY']),
         data={"from": app.config['API_FROM'],
-              "to": ["flaskaulasweb@zohomail.com", "santos.pedro4@aluno.ifsp.edu.br"],
+              "to": ["flaskaulasweb@zohomail.com"],
               "subject": "Novo Cadastro na Aplicação WEB",
               "text": corpo_email}
     )
@@ -106,23 +111,24 @@ def index():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.name.data).first()
         if user is None:
-            # Salva apenas o nome do usuário, sem o campo role_id que foi removido da tela
-            user = User(username=form.name.data)
+            user_role = Role.query.filter_by(name='User').first()
+            user = User(username=form.name.data, role=user_role)
             db.session.add(user)
             db.session.commit()
             session['known'] = False
             
             # ==========================================================
-            # EMAIL
+            # EMAIL (enviado apenas se a opção estiver marcada)
             # ==========================================================
-            try:
-                response = send_simple_message(form.name.data)
-                if response.status_code == 200:
-                    print("E-mail enviado com sucesso!")
-                else:
-                    print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
-            except Exception as e:
-                print(f"Erro ao enviar e-mail: {e}")
+            if form.email.data:
+                try:
+                    response = send_simple_message(form.name.data)
+                    if response.status_code == 200:
+                        print("E-mail enviado com sucesso!")
+                    else:
+                        print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
+                except Exception as e:
+                    print(f"Erro ao enviar e-mail: {e}")
                 
         else:
             session['known'] = True
