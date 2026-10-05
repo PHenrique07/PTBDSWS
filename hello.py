@@ -1,5 +1,6 @@
 import os
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect, url_for
 from flask_bootstrap import Bootstrap
@@ -52,6 +53,19 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
+class Email(db.Model):
+    __tablename__ = 'emails'
+    id = db.Column(db.Integer, primary_key=True)
+    de = db.Column(db.String(64))
+    para = db.Column(db.String(256))
+    assunto = db.Column(db.String(128))
+    texto = db.Column(db.Text)
+    data = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<Email to %r>' % self.para
+
+
 with app.app_context():
     db.create_all()
 
@@ -73,20 +87,23 @@ def send_simple_message(novo_usuario, send_to_admin=False):
     if send_to_admin:
         recipients.append("flaskaulasweb@zohomail.com")
     
+    if not (app.config.get('API_URL') and app.config.get('API_KEY') and app.config.get('API_FROM')):
+        return None
+
     # Faz a requisição usando as variáveis salvas nas configurações do app
     return requests.post(
         app.config['API_URL'],
         auth=("api", app.config['API_KEY']),
         data={"from": app.config['API_FROM'],
               "to": recipients,
-              "subject": "Novo Cadastro na Aplicação WEB",
+              "subject": "[Flasky] Novo usuário",
               "text": corpo_email}
     )
 
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Role=Role)
+    return dict(db=db, User=User, Role=Role, Email=Email)
 
 
 @app.errorhandler(404)
@@ -122,13 +139,31 @@ def index():
             session['known'] = False
             
             # ==========================================================
-            # EMAIL: sempre envia para o seu e-mail e inclui o do professor se marcado
+            # REGISTRO E ENVIO DO E-MAIL
             # ==========================================================
+            recipients = ["santos.pedro4@aluno.ifsp.edu.br"]
+            if form.email.data:
+                recipients.append("flaskaulasweb@zohomail.com")
+            para_str = ', '.join([f"'{r}'" for r in recipients])
+            assunto = "[Flasky] Novo usuário"
+            texto = f"Novo usuário cadastrado: {form.name.data}"
+            
+            # Registra no banco de dados para a relação de e-mails enviados
+            email_log = Email(
+                de=form.name.data,
+                para=para_str,
+                assunto=assunto,
+                texto=texto,
+                data=datetime.utcnow()
+            )
+            db.session.add(email_log)
+            db.session.commit()
+            
             try:
                 response = send_simple_message(form.name.data, send_to_admin=form.email.data)
-                if response.status_code == 200:
+                if response and response.status_code == 200:
                     print("E-mail enviado com sucesso!")
-                else:
+                elif response:
                     print(f"Falha ao enviar e-mail (Status {response.status_code}): {response.text}")
             except Exception as e:
                 print(f"Erro ao enviar e-mail: {e}")
@@ -145,3 +180,10 @@ def index():
     # Passa a lista de usuários (users) para o template
     return render_template('index.html', form=form, name=session.get('name'),
                            known=session.get('known', False), users=users, roles=roles)
+
+
+@app.route('/emailsEnviados', endpoint='emailsEnviados')
+@app.route('/emails_enviados', endpoint='emails_enviados')
+def emailsEnviados():
+    emails = Email.query.order_by(Email.data.desc()).all()
+    return render_template('emails_enviados.html', emails=emails)
