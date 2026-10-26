@@ -2,12 +2,17 @@ import requests
 from flask import current_app
 
 
-def send_simple_message(novo_usuario):
-    # O corpo do email exigido pelo enunciado da atividade
-    corpo_email = f"Prontuário: PT3037347\nNome: Pedro Henrique Santos da Silva\nUsuário cadastrado: {novo_usuario}"
+def registration_message(novo_usuario, destinatario):
+    return {
+        'from': current_app.config.get('API_FROM'),
+        'to': destinatario,
+        'subject': '[Flasky] Novo usuário',
+        'text': (f'Prontuário: PT3037347\nNome: Pedro Henrique Santos da Silva\n'
+                 f'Usuário cadastrado: {novo_usuario}')
+    }
 
-    recipients = ["flaskaulasweb@zohomail.com", "santos.pedro4@aluno.ifsp.edu.br"]
 
+def send_simple_message(novo_usuario, destinatario):
     if not (current_app.config.get('API_URL') and current_app.config.get('API_KEY') and current_app.config.get('API_FROM')):
         return None
 
@@ -15,8 +20,6 @@ def send_simple_message(novo_usuario):
     return requests.post(
         current_app.config['API_URL'],
         auth=("api", current_app.config['API_KEY']),
-        data={"from": current_app.config['API_FROM'],
-              "to": recipients,
-              "subject": "[Flasky] Novo usuário",
-              "text": corpo_email}
+        data=registration_message(novo_usuario, destinatario),
+        timeout=15
     )

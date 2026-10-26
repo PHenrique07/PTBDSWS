@@ -1,16 +1,44 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Flasky{% endblock %}
+{% block title %}Avaliação contínua: Aula 080{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+    <h1>Olá, {% if name %}{{ name }}{% else %}Estranho{% endif %}!</h1>
     {% if not known %}
-    <p>Pleased to meet you!</p>
+    <p>Prazer em conhecê-lo!</p>
     {% else %}
-    <p>Happy to see you again!</p>
+    <p>Feliz em vê-lo novamente!</p>
+    {% endif %}
+    {% if email_status == 'sent' %}
+    <p role="status">E-mail enviado para o <strong>endereço informado</strong>, notificando o cadastro de um novo usuário.</p>
+    {% elif email_status == 'unconfigured' %}
+    <p class="text-warning" role="alert">Usuário cadastrado. O e-mail não foi enviado porque o serviço de e-mail não está configurado.</p>
+    {% elif email_status == 'failed' %}
+    <p class="text-danger" role="alert">Usuário cadastrado, mas o serviço de e-mail não confirmou o envio.</p>
     {% endif %}
 </div>
 {{ wtf.quick_form(form) }}
+<h2>Relação de usuários cadastrados</h2>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Nome do usuário</th>
+                <th scope="col">Função</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{% if user.role %}{{ 'Admin' if user.role.name == 'Administrator' else user.role.name }}{% else %}—{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">Nenhum usuário cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
