@@ -12,7 +12,7 @@
     <p>Feliz em vê-lo novamente!</p>
     {% endif %}
     {% if email_status == 'sent' %}
-    <p role="status">E-mail enviado para o <strong>aluno, o professor e o endereço informado</strong>, notificando o cadastro de um novo usuário.</p>
+    <p role="status">E-mail enviado para o <strong>Administrador do sistema</strong>, notificando o cadastro de um novo usuário.</p>
     {% elif email_status == 'unconfigured' %}
     <p class="text-warning" role="alert">Usuário cadastrado. O e-mail não foi enviado porque o serviço de e-mail não está configurado.</p>
     {% elif email_status == 'failed' %}
