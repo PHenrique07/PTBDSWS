@@ -32,7 +32,7 @@ class RegistrationTestCase(unittest.TestCase):
         return self.client.post('/', data={'name': name, 'email': email}, follow_redirects=True)
 
     @patch('app.email.requests.post')
-    def test_registration_sends_to_entered_email_and_lists_user(self, post):
+    def test_registration_sends_to_all_three_recipients_and_lists_user(self, post):
         post.return_value = Mock(status_code=200)
         response = self.register()
         self.assertEqual(response.status_code, 200)
@@ -46,14 +46,28 @@ class RegistrationTestCase(unittest.TestCase):
         self.assertIn('E-mail enviado', html)
         post.assert_called_once()
         payload = post.call_args.kwargs['data']
-        self.assertEqual(payload['to'], 'pedro@example.com')
+        self.assertEqual(payload['to'], [
+            'flaskaulasweb@zohomail.com',
+            'santos.pedro4@aluno.ifsp.edu.br',
+            'pedro@example.com',
+        ])
         self.assertIn('Prontuário: PT3037347', payload['text'])
         self.assertIn('Nome: Pedro Henrique Santos da Silva', payload['text'])
         self.assertIn('Usuário cadastrado: Pedro 2', payload['text'])
         email = Email.query.one()
-        self.assertEqual(email.para, payload['to'])
+        self.assertEqual(email.para, ', '.join(payload['to']))
         self.assertEqual(email.de, payload['from'])
         self.assertEqual(email.texto, payload['text'])
+
+    @patch('app.email.requests.post')
+    def test_fixed_recipients_are_not_duplicated(self, post):
+        for recipient in ('flaskaulasweb@zohomail.com', 'SANTOS.PEDRO4@ALUNO.IFSP.EDU.BR'):
+            with self.subTest(recipient=recipient):
+                send_simple_message('Pedro', recipient)
+                self.assertEqual(post.call_args.kwargs['data']['to'], [
+                    'flaskaulasweb@zohomail.com',
+                    'santos.pedro4@aluno.ifsp.edu.br',
+                ])
 
     @patch('app.email.requests.post')
     def test_invalid_or_missing_email_does_not_register_or_send(self, post):

@@ -3,9 +3,13 @@ from flask import current_app
 
 
 def registration_message(novo_usuario, destinatario):
+    recipients = ['flaskaulasweb@zohomail.com', 'santos.pedro4@aluno.ifsp.edu.br']
+    if destinatario.casefold() not in (email.casefold() for email in recipients):
+        recipients.append(destinatario)
+
     return {
         'from': current_app.config.get('API_FROM'),
-        'to': destinatario,
+        'to': recipients,
         'subject': '[Flasky] Novo usuário',
         'text': (f'Prontuário: PT3037347\nNome: Pedro Henrique Santos da Silva\n'
                  f'Usuário cadastrado: {novo_usuario}')

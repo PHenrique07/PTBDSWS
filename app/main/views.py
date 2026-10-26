@@ -38,7 +38,7 @@ def index():
                 elif 200 <= response.status_code < 300:
                     message = registration_message(form.name.data, form.email.data)
                     db.session.add(Email(
-                        de=message['from'], para=message['to'],
+                        de=message['from'], para=', '.join(message['to']),
                         assunto=message['subject'], texto=message['text']
                     ))
                     db.session.commit()
