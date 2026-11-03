@@ -1,7 +1,8 @@
-from flask import current_app, render_template, session, redirect, url_for
+from flask import abort, current_app, flash, render_template, session, redirect, url_for
 from requests.exceptions import RequestException
+from sqlalchemy.exc import IntegrityError
 from . import main
-from .forms import NameForm
+from .forms import DeleteUserForm, EditUserForm, NameForm
 from .. import db
 from ..models import User, Role, Email
 from ..email import registration_message, send_simple_message
@@ -53,10 +54,53 @@ def index():
         session['name'] = form.name.data
         return redirect(url_for('.index'))
 
-    return render_template('index.html', form=form, name=session.get('name'),
+    return render_template('index.html', form=form, delete_form=DeleteUserForm(),
+                           name=session.get('name'),
                            known=session.get('known', False),
                            email_status=session.get('email_status'),
                            users=User.query.order_by(User.id).all())
+
+
+@main.route('/usuarios/<int:user_id>/editar', methods=['GET', 'POST'])
+def edit_user(user_id):
+    user = db.get_or_404(User, user_id)
+    form = EditUserForm()
+
+    if form.validate_on_submit():
+        previous_name = user.username
+        user.username = form.name.data
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            form.name.errors.append('Já existe um usuário com esse nome.')
+        else:
+            if session.get('name') == previous_name:
+                session['name'] = user.username
+            flash('Nome do usuário atualizado com sucesso.')
+            return redirect(url_for('.index'))
+    elif not form.is_submitted():
+        form.name.data = user.username
+
+    return render_template('edit_user.html', form=form, user=user)
+
+
+@main.route('/usuarios/<int:user_id>/excluir', methods=['POST'])
+def delete_user(user_id):
+    user = db.get_or_404(User, user_id)
+    form = DeleteUserForm()
+    if not form.validate_on_submit():
+        abort(400)
+
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    if session.get('name') == username:
+        session.pop('name', None)
+        session.pop('known', None)
+        session.pop('email_status', None)
+    flash('Usuário removido com sucesso.')
+    return redirect(url_for('.index'))
 
 
 @main.route('/emailsEnviados', endpoint='emailsEnviados')

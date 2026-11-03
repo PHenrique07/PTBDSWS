@@ -11,3 +11,15 @@ class NameForm(FlaskForm):
                        validators=[DataRequired(message='Informe o seu e-mail.'),
                                    Email(message='Informe um e-mail válido.'), Length(max=254)])
     submit = SubmitField('Submit')
+
+
+class EditUserForm(FlaskForm):
+    name = StringField('Nome do usuário',
+                       filters=[lambda value: value.strip() if value else value],
+                       validators=[DataRequired(message='Informe o nome do usuário.'),
+                                   Length(max=64, message='O nome deve ter no máximo 64 caracteres.')])
+    submit = SubmitField('Salvar')
+
+
+class DeleteUserForm(FlaskForm):
+    submit = SubmitField('Excluir')
