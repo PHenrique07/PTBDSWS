@@ -68,7 +68,8 @@
                 {% endif %}
                 <td>{% if user.role %}{{ 'Admin' if user.role.name == 'Administrator' else user.role.name }}{% else %}—{% endif %}</td>
                 <td>
-                    <form method="post" action="{{ url_for('main.delete_user', user_id=user.id) }}">
+                    <form method="post" action="{{ url_for('main.delete_user', user_id=user.id) }}"
+                          onsubmit="return window.confirm('Deseja realmente excluir este usuário?');">
                         {% if delete_form.csrf_token is defined %}
                         {{ delete_form.csrf_token(id='delete-csrf-' ~ user.id) }}
                         {% endif %}
