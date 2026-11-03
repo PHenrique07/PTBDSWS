@@ -54,7 +54,14 @@ def index():
         session['name'] = form.name.data
         return redirect(url_for('.index'))
 
-    return render_template('index.html', form=form, delete_form=DeleteUserForm(),
+    return _render_index(form=form)
+
+
+def _render_index(form=None, edit_form=None, editing_user_id=None):
+    return render_template('index.html',
+                           form=form if form is not None else NameForm(formdata=None),
+                           delete_form=DeleteUserForm(),
+                           edit_form=edit_form, editing_user_id=editing_user_id,
                            name=session.get('name'),
                            known=session.get('known', False),
                            email_status=session.get('email_status'),
@@ -82,7 +89,7 @@ def edit_user(user_id):
     elif not form.is_submitted():
         form.name.data = user.username
 
-    return render_template('edit_user.html', form=form, user=user)
+    return _render_index(edit_form=form, editing_user_id=user.id)
 
 
 @main.route('/usuarios/<int:user_id>/excluir', methods=['POST'])

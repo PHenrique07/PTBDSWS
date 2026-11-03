@@ -19,7 +19,7 @@
     <p class="text-danger" role="alert">Usuário cadastrado, mas o serviço de e-mail não confirmou o envio.</p>
     {% endif %}
 </div>
-{{ wtf.quick_form(form) }}
+{{ wtf.quick_form(form, action=url_for('main.index')) }}
 <h2>Relação de usuários cadastrados</h2>
 <div class="table-responsive">
     <table class="table">
@@ -37,12 +37,35 @@
         </thead>
         <tbody>
             {% for user in users %}
-            <tr>
+            <tr id="user-{{ user.id }}">
+                {% if user.id == editing_user_id %}
+                <td>
+                    <form id="edit-user-{{ user.id }}" method="post" action="{{ url_for('main.edit_user', user_id=user.id) }}">
+                        {% if edit_form.csrf_token is defined %}
+                        {{ edit_form.csrf_token(id='edit-csrf-' ~ user.id) }}
+                        {% endif %}
+                        <div class="{% if edit_form.name.errors or (edit_form.csrf_token is defined and edit_form.csrf_token.errors) %}has-error{% endif %}">
+                            {{ edit_form.name(id='edit-name-' ~ user.id, class='form-control input-sm', autofocus=true, aria_label='Nome do usuário') }}
+                            {% for error in edit_form.name.errors %}
+                            <span class="help-block" role="alert">{{ error }}</span>
+                            {% endfor %}
+                            {% if edit_form.csrf_token is defined and edit_form.csrf_token.errors %}
+                            <span class="help-block" role="alert">Sessão do formulário inválida ou expirada. Tente salvar novamente.</span>
+                            {% endif %}
+                        </div>
+                    </form>
+                </td>
+                <td>
+                    <a class="btn btn-default btn-xs" href="{{ url_for('main.index') }}#user-{{ user.id }}">Cancelar</a>
+                    <button type="submit" form="edit-user-{{ user.id }}" class="btn btn-primary btn-xs">Salvar</button>
+                </td>
+                {% else %}
                 <td>{{ user.username }}</td>
                 <td>
                     <a class="btn btn-default btn-xs" href="{{ url_for('main.edit_user', user_id=user.id) }}"
                        aria-label="Editar {{ user.username }}">Editar</a>
                 </td>
+                {% endif %}
                 <td>{% if user.role %}{{ 'Admin' if user.role.name == 'Administrator' else user.role.name }}{% else %}—{% endif %}</td>
                 <td>
                     <form method="post" action="{{ url_for('main.delete_user', user_id=user.id) }}">
