@@ -38,7 +38,7 @@ class RegistrationTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
         self.assertIn('Olá, Pedro 2!', html)
-        self.assertIn('Aula 080', html)
+        self.assertIn('Aula 090', html)
         self.assertIn('name="email"', html)
         self.assertIn('Relação de usuários cadastrados', html)
         self.assertIn('<td>Pedro 2</td>', html)

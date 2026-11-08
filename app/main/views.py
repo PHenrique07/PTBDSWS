@@ -1,3 +1,4 @@
+from flask_login import current_user, login_required, logout_user
 from flask import abort, current_app, flash, render_template, session, redirect, url_for
 from requests.exceptions import RequestException
 from sqlalchemy.exc import IntegrityError
@@ -69,6 +70,7 @@ def _render_index(form=None, edit_form=None, editing_user_id=None):
 
 
 @main.route('/usuarios/<int:user_id>/editar', methods=['GET', 'POST'])
+@login_required
 def edit_user(user_id):
     user = db.get_or_404(User, user_id)
     form = EditUserForm()
@@ -93,6 +95,7 @@ def edit_user(user_id):
 
 
 @main.route('/usuarios/<int:user_id>/excluir', methods=['POST'])
+@login_required
 def delete_user(user_id):
     user = db.get_or_404(User, user_id)
     form = DeleteUserForm()
@@ -100,6 +103,8 @@ def delete_user(user_id):
         abort(400)
 
     username = user.username
+    if current_user.get_id() == str(user.id):
+        logout_user()
     db.session.delete(user)
     db.session.commit()
     if session.get('name') == username:
@@ -112,6 +117,7 @@ def delete_user(user_id):
 
 @main.route('/emailsEnviados', endpoint='emailsEnviados')
 @main.route('/emails_enviados', endpoint='emails_enviados')
+@login_required
 def emailsEnviados():
     emails = Email.query.order_by(Email.data.desc()).all()
     return render_template('emails_enviados.html', emails=emails)

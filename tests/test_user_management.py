@@ -14,7 +14,7 @@ class UserManagementTestCase(unittest.TestCase):
         self.context.push()
         db.create_all()
         role = Role(name='User')
-        self.user = User(username='Pedro Santos', role=role)
+        self.user = User(username='Pedro Santos', role=role, confirmed=True)
         self.other_user = User(username='Gabriel', role=role)
         db.session.add_all([
             self.user, self.other_user,
@@ -23,6 +23,9 @@ class UserManagementTestCase(unittest.TestCase):
         ])
         db.session.commit()
         self.client = self.app.test_client()
+        with self.client.session_transaction() as session:
+            session['_user_id'] = str(self.user.id)
+            session['_fresh'] = True
         mail_patch = patch('app.email.requests.post')
         self.mail_request = mail_patch.start()
         self.addCleanup(mail_patch.stop)
