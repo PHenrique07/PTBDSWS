@@ -26,7 +26,7 @@ Este espaço centraliza os códigos e exercícios práticos abordados nas aulas.
 
 ## Aula 090 - Autenticação
 
-Base: https://github.com/flask-aulas/aula.090
+
 
 Inclui Flask-Login, senhas com hash, cadastro, confirmação da conta,
 recuperação de senha e alteração de senha e e-mail. Tokens expiram em uma hora.
