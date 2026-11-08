@@ -1,87 +1,9 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Avaliação contínua: Aula 090{% endblock %}
+{% block title %}Flasky{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Olá, {% if current_user.is_authenticated %}{{ current_user.username }}{% elif name %}{{ name }}{% else %}Desconhecido{% endif %}!</h1>
-    {% if not known %}
-    <p>Prazer em conhecê-lo!</p>
-    {% else %}
-    <p>Feliz em vê-lo novamente!</p>
-    {% endif %}
-    {% if email_status == 'sent' %}
-    <p role="status">E-mail enviado para o <strong>Administrador do sistema</strong>, notificando o cadastro de um novo usuário.</p>
-    {% elif email_status == 'unconfigured' %}
-    <p class="text-warning" role="alert">Usuário cadastrado. O e-mail não foi enviado porque o serviço de e-mail não está configurado.</p>
-    {% elif email_status == 'failed' %}
-    <p class="text-danger" role="alert">Usuário cadastrado, mas o serviço de e-mail não confirmou o envio.</p>
-    {% endif %}
-</div>
-{{ wtf.quick_form(form, action=url_for('main.index')) }}
-<h2>Relação de usuários cadastrados</h2>
-<div class="table-responsive">
-    <table class="table">
-        <colgroup>
-            <col style="width: 13%;">
-            <col style="width: 49%;">
-            <col style="width: 20%;">
-            <col style="width: 18%;">
-        </colgroup>
-        <thead>
-            <tr>
-                <th scope="colgroup" colspan="2">Nome do usuário</th>
-                <th scope="colgroup" colspan="2">Função</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr id="user-{{ user.id }}">
-                {% if user.id == editing_user_id %}
-                <td>
-                    <form id="edit-user-{{ user.id }}" method="post" action="{{ url_for('main.edit_user', user_id=user.id) }}">
-                        {% if edit_form.csrf_token is defined %}
-                        {{ edit_form.csrf_token(id='edit-csrf-' ~ user.id) }}
-                        {% endif %}
-                        <div class="{% if edit_form.name.errors or (edit_form.csrf_token is defined and edit_form.csrf_token.errors) %}has-error{% endif %}">
-                            {{ edit_form.name(id='edit-name-' ~ user.id, class='form-control input-sm', autofocus=true, aria_label='Nome do usuário') }}
-                            {% for error in edit_form.name.errors %}
-                            <span class="help-block" role="alert">{{ error }}</span>
-                            {% endfor %}
-                            {% if edit_form.csrf_token is defined and edit_form.csrf_token.errors %}
-                            <span class="help-block" role="alert">Sessão do formulário inválida ou expirada. Tente salvar novamente.</span>
-                            {% endif %}
-                        </div>
-                    </form>
-                </td>
-                <td>
-                    <a class="btn btn-default btn-xs" href="{{ url_for('main.index') }}#user-{{ user.id }}">Cancelar</a>
-                    <button type="submit" form="edit-user-{{ user.id }}" class="btn btn-primary btn-xs">Salvar</button>
-                </td>
-                {% else %}
-                <td>{{ user.username }}</td>
-                <td>
-                    <a class="btn btn-default btn-xs" href="{{ url_for('main.edit_user', user_id=user.id) }}"
-                       aria-label="Editar {{ user.username }}">Editar</a>
-                </td>
-                {% endif %}
-                <td>{% if user.role %}{{ 'Admin' if user.role.name == 'Administrator' else user.role.name }}{% else %}—{% endif %}</td>
-                <td>
-                    <form method="post" action="{{ url_for('main.delete_user', user_id=user.id) }}"
-                          onsubmit="return window.confirm('Deseja realmente excluir este usuário?');">
-                        {% if delete_form.csrf_token is defined %}
-                        {{ delete_form.csrf_token(id='delete-csrf-' ~ user.id) }}
-                        {% endif %}
-                        <button type="submit" class="btn btn-danger btn-xs"
-                                aria-label="Excluir {{ user.username }}">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="4">Nenhum usuário cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
 </div>
 {% endblock %}
