@@ -6,4 +6,27 @@
 <div class="page-header">
     <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
 </div>
+{% if users is not none %}
+<h2>Rela??o de usu?rios cadastrados</h2>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Nome de usu?rio</th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Confirmado?</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email or '?' }}</td>
+                <td>{{ 'True' if user.confirmed else 'False' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 {% endblock %}

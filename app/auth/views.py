@@ -59,10 +59,11 @@ def register():
         db.session.add(user)
         db.session.commit()
         token = user.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
-                   'auth/email/confirm', user=user, token=token)
-        flash('A confirmation email has been sent to you by email.')
-        flash('<p>To confirm your account <a href="' + url_for('auth.confirm', token=token, _external=True) + '">click here</a></p>')
+        if send_email(user.email, 'Confirm Your Account',
+                      'auth/email/confirm', user=user, token=token):
+            flash('A confirmation email has been sent to you.')
+        else:
+            flash('Account created. Log in to request another confirmation email.')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
@@ -84,10 +85,11 @@ def confirm(token):
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    send_email(current_user.email, 'Confirm Your Account',
-               'auth/email/confirm', user=current_user, token=token)
-    flash('A new confirmation email has been sent to you by email.')
-    flash('<p>To confirm your account <a href="' + url_for('auth.confirm', token=token, _external=True) + '">click here</a></p>')
+    if send_email(current_user.email, 'Confirm Your Account',
+                  'auth/email/confirm', user=current_user, token=token):
+        flash('A new confirmation email has been sent to you.')
+    else:
+        flash('Unable to send the confirmation email. Please try again later.')
     return redirect(url_for('main.index'))
 
 
@@ -119,9 +121,7 @@ def password_reset_request():
             send_email(user.email, 'Reset Your Password',
                        'auth/email/reset_password',
                        user=user, token=token)
-        flash('An email with instructions to reset your password has been '
-              'sent to you.')
-        flash('<p>To reset your password <a href="' + url_for('auth.password_reset', token=token, _external=True) + '">click here</a></p>')
+        flash('If the address is registered, you will receive password reset instructions.')
         return redirect(url_for('auth.login'))
     return render_template('auth/reset_password.html', form=form)
 
@@ -149,12 +149,11 @@ def change_email_request():
         if current_user.verify_password(form.password.data):
             new_email = form.email.data.lower()
             token = current_user.generate_email_change_token(new_email)
-            send_email(new_email, 'Confirm your email address',
-                       'auth/email/change_email',
-                       user=current_user, token=token)
-            flash('An email with instructions to confirm your new email '
-                  'address has been sent to you.')
-            flash('<p>To confirm your new email address <a href="' + url_for('auth.change_email', token=token, _external=True) + '">click here</a></p>')
+            if send_email(new_email, 'Confirm your email address',
+                          'auth/email/change_email', user=current_user, token=token):
+                flash('Instructions were sent to your new email address.')
+            else:
+                flash('Unable to send the confirmation email. Please try again later.')
             return redirect(url_for('main.index'))
         else:
             flash('Invalid email or password.')
